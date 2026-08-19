@@ -110,6 +110,10 @@ body{
   font-size:19px;font-family:inherit;background:#fff;color:#123;-webkit-user-select:text;user-select:text}
 .field input:focus{outline:none;border-color:#0e71b8}
 .two{display:flex;gap:10px}.two>*{flex:1}
+.dir{display:flex;gap:8px}
+.dirbtn{flex:1;padding:12px 6px;border:1.5px solid #ccd6dd;background:#fff;border-radius:10px;
+  font-size:15px;font-weight:500;font-family:inherit;color:#456;cursor:pointer}
+.dirbtn.on{border-color:#0e71b8;background:#e7f2fa;color:#0e71b8;font-weight:700}
 .calc{background:#e6eef4;border-radius:10px;padding:11px 13px;font-size:14px;color:#26506f;
   margin-bottom:14px;line-height:1.5}
 .btn{width:100%;padding:14px;border:none;border-radius:11px;background:#0e71b8;color:#fff;
@@ -197,6 +201,13 @@ body{
     <h2>Kurs für <span id="rsPair">EUR → TRY</span></h2>
     <p class="hint">Trage den Kurs ein, den du wirklich bekommen hast. Nichts wird geladen, alles bleibt auf dem iPhone.</p>
 
+    <div class="field"><label>Richtung</label>
+      <div class="dir">
+        <button class="dirbtn on" id="dirA">EUR → TRY</button>
+        <button class="dirbtn" id="dirB">TRY → EUR</button>
+      </div>
+    </div>
+
     <div class="tabs">
       <button class="tab on" data-tab="calc">Aus Wechsel berechnen</button>
       <button class="tab" data-tab="direct">Kurs direkt</button>
@@ -269,8 +280,12 @@ var S = {
   entry:"1",          // was gerade eingetippt ist
   acc:null, op:null, fresh:true,
   rates:[],           // {id,from,to,rate,label,ts}
-  active:{}           // "EUR>TRY" -> id
+  active:{}           // "EUR|TRY" -> id  (Paar, richtungsunabhängig)
 };
+
+/* Schlüssel für ein Währungspaar – unabhängig davon, welche Seite oben steht.
+   So bleibt der gewählte Kurs beim Umschalten der Richtung erhalten. */
+function pairKey(a, b){ return [a || S.from, b || S.to].sort().join("|"); }
 
 (function load(){
   try{
@@ -280,12 +295,18 @@ var S = {
       if(d.from && CUR[d.from]) S.from = d.from;
       if(d.to && CUR[d.to]) S.to = d.to;
       if(Array.isArray(d.rates)) S.rates = d.rates;
-      if(d.active) S.active = d.active;
+      if(d.active){
+        // alte Schlüssel "EUR>TRY" auf das neue Paarformat umstellen
+        Object.keys(d.active).forEach(function(k){
+          var p = k.indexOf(">") > 0 ? k.split(">") : k.split("|");
+          S.active[pairKey(p[0], p[1])] = d.active[k];
+        });
+      }
     }
   }catch(e){}
   if(!S.rates.length){
     S.rates.push({id:1, from:"EUR", to:"TRY", rate:55.5838, label:"Startwert", ts:Date.now()});
-    S.active["EUR>TRY"] = 1;
+    S.active[pairKey("EUR","TRY")] = 1;
   }
 })();
 
@@ -293,17 +314,23 @@ function save(){
   try{ store.set("kursApp", JSON.stringify({from:S.from,to:S.to,rates:S.rates,active:S.active})); }catch(e){}
 }
 
-/* ---------- Kurs ermitteln (auch invers) ---------- */
+/* Passt einen gespeicherten Kurs auf die aktuell angezeigte Richtung an. */
+function orient(r){
+  var inv = !(r.from === S.from && r.to === S.to);
+  return { rate: inv ? 1/r.rate : r.rate, src:r, inv:inv };
+}
+
+function fitsPair(r){
+  return (r.from === S.from && r.to === S.to) || (r.from === S.to && r.to === S.from);
+}
+
+/* ---------- Kurs ermitteln ---------- */
 function currentRate(){
-  var key = S.from + ">" + S.to, id = S.active[key], r;
-  if(id){ r = S.rates.filter(function(x){return x.id===id;})[0]; if(r) return {rate:r.rate, src:r, inv:false}; }
-  // direkter Treffer
-  r = S.rates.filter(function(x){return x.from===S.from && x.to===S.to;})[0];
-  if(r) return {rate:r.rate, src:r, inv:false};
-  // umgekehrter Treffer
-  r = S.rates.filter(function(x){return x.from===S.to && x.to===S.from;})[0];
-  if(r && r.rate) return {rate:1/r.rate, src:r, inv:true};
-  return null;
+  var id = S.active[pairKey()], r = null;
+  if(id) r = S.rates.filter(function(x){ return x.id === id; })[0] || null;
+  if(!r || !fitsPair(r)) r = S.rates.filter(fitsPair)[0] || null;
+  if(!r || !r.rate) return null;
+  return orient(r);
 }
 
 /* ---------- Zahlen ---------- */
@@ -415,18 +442,36 @@ $("swap").addEventListener("click", function(){
 
 /* ---------- Kurs-Blatt ---------- */
 var tab = "calc";
-function openRate(){
+
+/* Beschriftungen, Platzhalter und Richtungsknöpfe auf die aktuelle Richtung setzen */
+function syncRateSheet(){
   var R = currentRate();
   $("rsPair").textContent = S.from + " → " + S.to;
   $("lbGiven").textContent = "Gegeben (" + S.from + ")";
   $("lbGot").textContent = "Erhalten (" + S.to + ")";
   $("lbDirect").textContent = "1 " + S.from + " = ? " + S.to;
+  $("inGiven").placeholder = S.from === "EUR" ? "200" : "10000";
+  $("inGot").placeholder   = S.to   === "EUR" ? "180"  : "11000";
   $("inDirect").value = R ? fmtRate(R.rate) : "";
-  $("inGiven").value = ""; $("inGot").value = ""; $("inLabel").value = "";
-  $("calcOut").textContent = "Beträge eintragen – der Kurs wird daraus berechnet.";
+  $("dirA").textContent = S.from + " → " + S.to;
+  $("dirB").textContent = S.to + " → " + S.from;
+  liveCalc();
   drawList();
+}
+
+function openRate(){
+  $("inGiven").value = ""; $("inGot").value = ""; $("inLabel").value = "";
+  syncRateSheet();
   $("sheetRate").classList.add("on");
 }
+
+/* Richtung umschalten – bleibt danach so, auch nach dem Speichern und Neustart */
+$("dirA").addEventListener("click", function(){ syncRateSheet(); });
+$("dirB").addEventListener("click", function(){
+  var f = S.from; S.from = S.to; S.to = f;
+  $("inGiven").value = ""; $("inGot").value = "";
+  save(); render(); syncRateSheet();
+});
 function num(v){ return parseFloat(String(v).replace(/\./g,"").replace(",", ".")); }
 
 document.querySelectorAll("#sheetRate .tab").forEach(function(t){
@@ -462,29 +507,27 @@ $("saveRate").addEventListener("click", function(){
     if(!(rate > 0)){ $("lbDirect").textContent = "Bitte einen Kurs größer 0 eintragen"; return; }
   }
   var id = Date.now();
+  // wird genau in der gewählten Richtung abgelegt
   S.rates.unshift({ id:id, from:S.from, to:S.to, rate:rate,
     label: ($("inLabel").value || "").trim() || "Eigener Kurs", ts:Date.now() });
-  S.active[S.from + ">" + S.to] = id;
-  save(); render(); drawList();
+  S.active[pairKey()] = id;
+  save(); render();
   $("inGiven").value = ""; $("inGot").value = ""; $("inLabel").value = "";
-  liveCalc();
+  syncRateSheet();
   $("sheetRate").classList.remove("on");
 });
 
 function drawList(){
   var ul = $("rateList"); ul.innerHTML = "";
-  var act = S.active[S.from + ">" + S.to];
-  var mine = S.rates.filter(function(r){
-    return (r.from === S.from && r.to === S.to) || (r.from === S.to && r.to === S.from);
-  });
+  var act = S.active[pairKey()];
+  var mine = S.rates.filter(fitsPair);
   if(!mine.length){
     var e = document.createElement("li");
     e.innerHTML = '<div class="empty">Noch nichts gespeichert. Oben eintragen und sichern.</div>';
     ul.appendChild(e); return;
   }
   mine.forEach(function(r){
-    var inv = !(r.from === S.from && r.to === S.to);
-    var shown = inv ? 1/r.rate : r.rate;
+    var o = orient(r), inv = o.inv, shown = o.rate;
     var li = document.createElement("li");
     if(r.id === act) li.className = "on";
     var d = new Date(r.ts);
@@ -494,13 +537,13 @@ function drawList(){
     info.innerHTML = '<div class="name">' + esc(r.label) + '</div><div class="num">1 ' + S.from +
       ' = ' + fmtRate(shown) + ' ' + S.to + ' · ' + when + (inv ? ' · umgekehrt' : '') + '</div>';
     info.addEventListener("click", function(){
-      S.active[S.from + ">" + S.to] = r.id; save(); render(); drawList();
+      S.active[pairKey()] = r.id; save(); render(); drawList();
     });
     var del = document.createElement("button");
     del.className = "del"; del.textContent = "✕"; del.setAttribute("aria-label","Kurs löschen");
     del.addEventListener("click", function(){
       S.rates = S.rates.filter(function(x){ return x.id !== r.id; });
-      if(S.active[S.from + ">" + S.to] === r.id) delete S.active[S.from + ">" + S.to];
+      if(S.active[pairKey()] === r.id) delete S.active[pairKey()];
       save(); render(); drawList();
     });
     li.appendChild(info); li.appendChild(del);

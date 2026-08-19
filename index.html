@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mein Kurs">
+<meta name="theme-color" content="#0e71b8">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<title>Mein Kurs</title>
+<style>
+:root{
+  --bg:#0e71b8;
+  --top:#0a4f8c;
+  --key:#1179bf;
+  --key-alt:#0f6cad;
+  --op:#2c9ade;
+  --side:#8fa6b4;
+  --ce:#f0a623;
+  --eq:#0a4f8c;
+  --line:rgba(255,255,255,.14);
+  --txt:#fff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight:300;
+  overflow:hidden;
+  -webkit-user-select:none;user-select:none;
+  -webkit-text-size-adjust:100%;
+}
+#app{
+  display:flex;flex-direction:column;
+  height:100vh;height:100dvh;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+
+/* ---------- Anzeige ---------- */
+.pane{position:relative;flex:1 1 0;min-height:0;display:flex;flex-direction:column;justify-content:center;padding:0 18px}
+.pane.top{background:var(--top)}
+.pane.bot{background:var(--bg)}
+.meta{display:flex;justify-content:space-between;align-items:baseline;font-size:clamp(15px,4.6vw,21px);opacity:.97}
+.meta .code{font-weight:400;letter-spacing:.5px}
+.pane.top .meta{position:absolute;top:clamp(6px,1.6vh,16px);left:18px;right:18px}
+.pane.bot .meta{position:absolute;bottom:clamp(6px,1.6vh,16px);left:18px;right:18px}
+.row{display:flex;align-items:center;gap:14px;width:100%}
+.flag{width:clamp(44px,13vw,58px);height:clamp(30px,9vw,40px);border-radius:6px;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;font-size:clamp(22px,7vw,30px);
+  background:rgba(255,255,255,.12);overflow:hidden;line-height:1}
+.val{flex:1;text-align:right;font-size:clamp(40px,15.5vw,86px);line-height:1;font-weight:200;
+  letter-spacing:-1px;white-space:nowrap;overflow:hidden;text-overflow:clip;direction:ltr}
+.val.small{font-size:clamp(30px,11vw,62px)}
+.val.tiny{font-size:clamp(24px,8.5vw,48px)}
+.caret{display:inline-block;width:2px;height:.78em;background:#fff;margin-left:3px;vertical-align:-6%;
+  animation:blink 1.1s steps(1,end) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- Tauschen ---------- */
+.swap{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);z-index:5;
+  width:58px;height:58px;border-radius:50%;border:none;background:#2f8fcd;
+  box-shadow:0 2px 10px rgba(0,0,0,.25);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+.swap:active{background:#3ea3e2}
+.swap svg{display:block}
+.divider{position:relative;height:0;background:transparent}
+
+/* ---------- Tastatur ---------- */
+.pad{flex:0 0 auto;display:grid;grid-template-columns:repeat(5,1fr);
+  grid-auto-rows:minmax(0,1fr);height:clamp(230px,42vh,340px);gap:2px;background:rgba(255,255,255,.12)}
+.k{background:var(--key);border:none;color:#fff;font-weight:200;
+  font-size:clamp(24px,7.4vw,34px);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.k:active{filter:brightness(1.25)}
+.k.op{background:var(--op);font-weight:300}
+.k.op.armed{background:#fff;color:var(--op)}
+.k.eq{background:var(--eq)}
+.k.side{background:var(--side);font-size:clamp(19px,5.6vw,25px)}
+.k.ce{background:var(--ce);font-size:clamp(21px,6vw,28px)}
+.k svg{display:block}
+
+/* ---------- Kursleiste ---------- */
+.rate{flex:0 0 auto;padding:11px 16px calc(11px + env(safe-area-inset-bottom));
+  background:var(--bg);text-align:center;font-size:clamp(12px,3.5vw,14px);line-height:1.45;cursor:pointer}
+.rate b{font-weight:500}
+.rate .sub{opacity:.72;font-size:.88em}
+.rate:active{background:#0c66a6}
+
+/* ---------- Blätter (Sheets) ---------- */
+.sheet{position:fixed;inset:0;z-index:40;display:none;background:rgba(4,32,56,.55);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.sheet.on{display:block}
+.card{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow:auto;-webkit-overflow-scrolling:touch;
+  background:#f2f5f7;color:#123;border-radius:16px 16px 0 0;
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom));
+  animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(100%)}}
+.card h2{font-size:19px;font-weight:600;margin-bottom:4px}
+.card p.hint{font-size:13px;color:#5a6b78;margin-bottom:14px;line-height:1.45}
+.tabs{display:flex;gap:6px;background:#e0e6ea;border-radius:10px;padding:4px;margin-bottom:14px}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;border-radius:7px;
+  font-size:14px;font-weight:500;color:#456;cursor:pointer;font-family:inherit}
+.tab.on{background:#fff;color:#0e71b8;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:#5a6b78;margin-bottom:5px;letter-spacing:.2px}
+.field input{width:100%;padding:12px 13px;border:1.5px solid #ccd6dd;border-radius:10px;
+  font-size:19px;font-family:inherit;background:#fff;color:#123;-webkit-user-select:text;user-select:text}
+.field input:focus{outline:none;border-color:#0e71b8}
+.two{display:flex;gap:10px}.two>*{flex:1}
+.calc{background:#e6eef4;border-radius:10px;padding:11px 13px;font-size:14px;color:#26506f;
+  margin-bottom:14px;line-height:1.5}
+.btn{width:100%;padding:14px;border:none;border-radius:11px;background:#0e71b8;color:#fff;
+  font-size:16px;font-weight:600;font-family:inherit;cursor:pointer}
+.btn:active{background:#0c66a6}
+.btn.ghost{background:transparent;color:#5a6b78;font-weight:500;padding:12px;margin-top:2px}
+.list{list-style:none;margin:6px 0 12px}
+.list li{display:flex;align-items:center;gap:10px;padding:12px 12px;background:#fff;border-radius:11px;
+  margin-bottom:7px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.list li.on{outline:2px solid #0e71b8}
+.list .info{flex:1;min-width:0;cursor:pointer}
+.list .name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list .num{font-size:13px;color:#5a6b78;margin-top:2px}
+.del{border:none;background:#eef2f5;color:#8899a6;width:32px;height:32px;border-radius:8px;
+  font-size:17px;flex:0 0 auto;cursor:pointer;font-family:inherit}
+.del:active{background:#e2c9c9;color:#b23}
+.cur{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:7px}
+.cur button{padding:11px 6px;border:1.5px solid #d5dee4;background:#fff;border-radius:10px;
+  font-size:14px;font-family:inherit;color:#123;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:6px}
+.cur button.on{border-color:#0e71b8;background:#e7f2fa;font-weight:600}
+.empty{font-size:13.5px;color:#5a6b78;padding:14px 2px;line-height:1.5}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section class="pane top" id="paneTop">
+    <div class="meta"><span class="name" id="topName">Euro</span><span class="code" id="topCode">EUR</span></div>
+    <div class="row">
+      <div class="flag" id="topFlag">🇪🇺</div>
+      <div class="val" id="topVal">1</div>
+    </div>
+  </section>
+
+  <div class="divider">
+    <button class="swap" id="swap" aria-label="Währungen tauschen">
+      <svg width="22" height="10" viewBox="0 0 22 10"><path d="M11 0 21 9H1z" fill="#fff" opacity=".95"/></svg>
+      <svg width="22" height="10" viewBox="0 0 22 10"><path d="M11 10 1 1h20z" fill="#fff" opacity=".95"/></svg>
+    </button>
+  </div>
+
+  <section class="pane bot" id="paneBot">
+    <div class="row">
+      <div class="flag" id="botFlag">🇹🇷</div>
+      <div class="val" id="botVal">0</div>
+    </div>
+    <div class="meta"><span class="name" id="botName">Türkische Lira</span><span class="code" id="botCode">TRY</span></div>
+  </section>
+
+  <div class="pad" id="pad">
+    <button class="k side" data-k="rate" aria-label="Kurs bearbeiten">
+      <svg width="26" height="24" viewBox="0 0 26 24" fill="none" stroke="#fff" stroke-width="1.7">
+        <rect x="2" y="2.5" width="22" height="19" rx="2"/><path d="M2 8.5h22M2 14.5h22"/></svg>
+    </button>
+    <button class="k" data-k="7">7</button><button class="k" data-k="8">8</button>
+    <button class="k" data-k="9">9</button><button class="k op" data-k="/">÷</button>
+
+    <button class="k side" data-k="back" aria-label="Letzte Ziffer löschen">
+      <svg width="28" height="20" viewBox="0 0 28 20" fill="none" stroke="#fff" stroke-width="1.7">
+        <path d="M9 2h16a1 1 0 011 1v14a1 1 0 01-1 1H9L2 10z"/><path d="M13 7l7 6M20 7l-7 6"/></svg>
+    </button>
+    <button class="k" data-k="4">4</button><button class="k" data-k="5">5</button>
+    <button class="k" data-k="6">6</button><button class="k op" data-k="*">×</button>
+
+    <button class="k side" data-k="cur" aria-label="Währung wählen">★</button>
+    <button class="k" data-k="1">1</button><button class="k" data-k="2">2</button>
+    <button class="k" data-k="3">3</button><button class="k op" data-k="-">−</button>
+
+    <button class="k ce" data-k="ce">CE</button>
+    <button class="k" data-k="0">0</button><button class="k" data-k=",">,</button>
+    <button class="k eq" data-k="=">=</button><button class="k op" data-k="+">+</button>
+  </div>
+
+  <div class="rate" id="rateBar">
+    <div><b id="rateLine">1 EUR = 55,5838 TRY</b></div>
+    <div class="sub" id="rateSub">Eigener Kurs · tippen zum Ändern</div>
+  </div>
+</div>
+
+<!-- Kurs-Blatt -->
+<div class="sheet" id="sheetRate">
+  <div class="card">
+    <h2>Kurs für <span id="rsPair">EUR → TRY</span></h2>
+    <p class="hint">Trage den Kurs ein, den du wirklich bekommen hast. Nichts wird geladen, alles bleibt auf dem iPhone.</p>
+
+    <div class="tabs">
+      <button class="tab on" data-tab="calc">Aus Wechsel berechnen</button>
+      <button class="tab" data-tab="direct">Kurs direkt</button>
+    </div>
+
+    <div id="tabCalc">
+      <div class="two">
+        <div class="field"><label id="lbGiven">Gegeben (EUR)</label>
+          <input id="inGiven" type="text" inputmode="decimal" placeholder="200"></div>
+        <div class="field"><label id="lbGot">Erhalten (TRY)</label>
+          <input id="inGot" type="text" inputmode="decimal" placeholder="11000"></div>
+      </div>
+      <div class="calc" id="calcOut">Beträge eintragen – der Kurs wird daraus berechnet.</div>
+    </div>
+
+    <div id="tabDirect" style="display:none">
+      <div class="field"><label id="lbDirect">1 EUR = ? TRY</label>
+        <input id="inDirect" type="text" inputmode="decimal" placeholder="55,5838"></div>
+    </div>
+
+    <div class="field"><label>Bezeichnung</label>
+      <input id="inLabel" type="text" placeholder="z. B. Wechselstube Ayvalık"></div>
+
+    <button class="btn" id="saveRate">Kurs speichern</button>
+
+    <h2 style="margin-top:22px">Gespeicherte Kurse</h2>
+    <ul class="list" id="rateList"></ul>
+    <button class="btn ghost" id="closeRate">Schließen</button>
+  </div>
+</div>
+
+<!-- Währungs-Blatt -->
+<div class="sheet" id="sheetCur">
+  <div class="card">
+    <h2 id="curTitle">Währung wählen</h2>
+    <p class="hint">Oben ist das, was du eingibst. Unten das Ergebnis.</p>
+    <div class="tabs">
+      <button class="tab on" data-slot="from">Oben</button>
+      <button class="tab" data-slot="to">Unten</button>
+    </div>
+    <div class="cur" id="curGrid"></div>
+    <button class="btn ghost" id="closeCur">Schließen</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- Speicher (fällt lautlos auf RAM zurück) ---------- */
+var mem = {};
+var store = {
+  get: function(k){ try{ return localStorage.getItem(k); }catch(e){ return mem[k]||null; } },
+  set: function(k,v){ try{ localStorage.setItem(k,v); }catch(e){ mem[k]=v; } }
+};
+
+/* ---------- Währungen ---------- */
+var CUR = {
+  EUR:{n:"Euro",f:"🇪🇺"}, TRY:{n:"Türkische Lira",f:"🇹🇷"}, USD:{n:"US-Dollar",f:"🇺🇸"},
+  CHF:{n:"Schweizer Franken",f:"🇨🇭"}, GBP:{n:"Britisches Pfund",f:"🇬🇧"}, PLN:{n:"Złoty",f:"🇵🇱"},
+  CZK:{n:"Tschechische Krone",f:"🇨🇿"}, HUF:{n:"Forint",f:"🇭🇺"}, DKK:{n:"Dänische Krone",f:"🇩🇰"},
+  NOK:{n:"Norwegische Krone",f:"🇳🇴"}, SEK:{n:"Schwedische Krone",f:"🇸🇪"}, HRK:{n:"Kuna",f:"🇭🇷"},
+  RON:{n:"Rumänischer Leu",f:"🇷🇴"}, BGN:{n:"Lew",f:"🇧🇬"}, MAD:{n:"Dirham",f:"🇲🇦"},
+  AED:{n:"VAE-Dirham",f:"🇦🇪"}, EGP:{n:"Ägyptisches Pfund",f:"🇪🇬"}, THB:{n:"Baht",f:"🇹🇭"},
+  JPY:{n:"Yen",f:"🇯🇵"}, CAD:{n:"Kanadischer Dollar",f:"🇨🇦"}, AUD:{n:"Australischer Dollar",f:"🇦🇺"}
+};
+
+/* ---------- Zustand ---------- */
+var S = {
+  from:"EUR", to:"TRY",
+  entry:"1",          // was gerade eingetippt ist
+  acc:null, op:null, fresh:true,
+  rates:[],           // {id,from,to,rate,label,ts}
+  active:{}           // "EUR>TRY" -> id
+};
+
+(function load(){
+  try{
+    var raw = store.get("kursApp");
+    if(raw){
+      var d = JSON.parse(raw);
+      if(d.from && CUR[d.from]) S.from = d.from;
+      if(d.to && CUR[d.to]) S.to = d.to;
+      if(Array.isArray(d.rates)) S.rates = d.rates;
+      if(d.active) S.active = d.active;
+    }
+  }catch(e){}
+  if(!S.rates.length){
+    S.rates.push({id:1, from:"EUR", to:"TRY", rate:55.5838, label:"Startwert", ts:Date.now()});
+    S.active["EUR>TRY"] = 1;
+  }
+})();
+
+function save(){
+  try{ store.set("kursApp", JSON.stringify({from:S.from,to:S.to,rates:S.rates,active:S.active})); }catch(e){}
+}
+
+/* ---------- Kurs ermitteln (auch invers) ---------- */
+function currentRate(){
+  var key = S.from + ">" + S.to, id = S.active[key], r;
+  if(id){ r = S.rates.filter(function(x){return x.id===id;})[0]; if(r) return {rate:r.rate, src:r, inv:false}; }
+  // direkter Treffer
+  r = S.rates.filter(function(x){return x.from===S.from && x.to===S.to;})[0];
+  if(r) return {rate:r.rate, src:r, inv:false};
+  // umgekehrter Treffer
+  r = S.rates.filter(function(x){return x.from===S.to && x.to===S.from;})[0];
+  if(r && r.rate) return {rate:1/r.rate, src:r, inv:true};
+  return null;
+}
+
+/* ---------- Zahlen ---------- */
+function fmt(n, maxDec){
+  if(!isFinite(n)) return "–";
+  return n.toLocaleString("de-DE", {minimumFractionDigits:0, maximumFractionDigits:maxDec===undefined?2:maxDec});
+}
+function fmtRate(n){
+  if(!isFinite(n)) return "–";
+  var d = n >= 1000 ? 2 : n >= 100 ? 3 : n >= 1 ? 4 : 6;
+  return n.toLocaleString("de-DE",{minimumFractionDigits:d, maximumFractionDigits:d});
+}
+function entryNum(){ return parseFloat(S.entry.replace(",", ".")) || 0; }
+function entryDisplay(){
+  var p = S.entry.split(",");
+  var whole = p[0]==="" ? "0" : p[0];
+  var out = parseInt(whole,10).toLocaleString("de-DE");
+  if(p.length > 1) out += "," + p[1];
+  return out;
+}
+function fitClass(el, text){
+  el.classList.remove("small","tiny");
+  if(text.length > 13) el.classList.add("tiny");
+  else if(text.length > 9) el.classList.add("small");
+}
+
+/* ---------- Zeichnen ---------- */
+var $ = function(id){ return document.getElementById(id); };
+
+function render(){
+  $("topName").textContent = CUR[S.from].n; $("topCode").textContent = S.from; $("topFlag").textContent = CUR[S.from].f;
+  $("botName").textContent = CUR[S.to].n;   $("botCode").textContent = S.to;   $("botFlag").textContent = CUR[S.to].f;
+
+  var t = entryDisplay();
+  $("topVal").innerHTML = "";
+  $("topVal").appendChild(document.createTextNode(t));
+  if(S.op){ var c=document.createElement("span"); c.className="caret"; $("topVal").appendChild(c); }
+  fitClass($("topVal"), t);
+
+  var R = currentRate();
+  var b = R ? fmt(entryNum()*R.rate, 2) : "Kurs fehlt";
+  $("botVal").textContent = b;
+  fitClass($("botVal"), b);
+
+  if(R){
+    $("rateLine").textContent = "1 " + S.from + " = " + fmtRate(R.rate) + " " + S.to;
+    var d = new Date(R.src.ts);
+    var when = ("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+"."+d.getFullYear();
+    $("rateSub").textContent = (R.src.label || "Eigener Kurs") + (R.inv ? " (umgekehrt)" : "") + " · " + when;
+  } else {
+    $("rateLine").textContent = "Noch kein Kurs für " + S.from + " → " + S.to;
+    $("rateSub").textContent = "Tippen und eintragen";
+  }
+  document.querySelectorAll(".k.op").forEach(function(k){
+    k.classList.toggle("armed", S.op === k.getAttribute("data-k"));
+  });
+}
+
+/* ---------- Tastatur ---------- */
+function apply(a, op, b){
+  if(op==="+") return a+b;
+  if(op==="-") return a-b;
+  if(op==="*") return a*b;
+  if(op==="/") return b===0 ? 0 : a/b;
+  return b;
+}
+function setEntry(n){
+  var s = (Math.round(n*1e6)/1e6).toString().replace(".", ",");
+  S.entry = s;
+}
+function key(k){
+  if(/^[0-9]$/.test(k)){
+    if(S.fresh){ S.entry = k; S.fresh = false; }
+    else if(!(S.entry === "0" && k === "0")){
+      if(S.entry === "0") S.entry = k;
+      else if(S.entry.replace(/[^0-9]/g,"").length < 12) S.entry += k;
+    }
+  } else if(k === ","){
+    if(S.fresh){ S.entry = "0,"; S.fresh = false; }
+    else if(S.entry.indexOf(",") < 0) S.entry += ",";
+  } else if(k === "back"){
+    if(S.fresh){ S.entry = "0"; }
+    else { S.entry = S.entry.slice(0,-1); if(S.entry === "" || S.entry === "-") S.entry = "0"; }
+  } else if(k === "ce"){
+    S.entry = "0"; S.acc = null; S.op = null; S.fresh = true;
+  } else if(k === "+" || k === "-" || k === "*" || k === "/"){
+    if(S.op !== null && !S.fresh){ S.acc = apply(S.acc, S.op, entryNum()); setEntry(S.acc); }
+    else { S.acc = entryNum(); }
+    S.op = k; S.fresh = true;
+  } else if(k === "="){
+    if(S.op !== null){ setEntry(apply(S.acc, S.op, entryNum())); S.acc = null; S.op = null; S.fresh = true; }
+  }
+  render();
+}
+
+$("pad").addEventListener("click", function(e){
+  var b = e.target.closest(".k"); if(!b) return;
+  var k = b.getAttribute("data-k");
+  if(k === "rate") return openRate();
+  if(k === "cur")  return openCur();
+  key(k);
+  if(navigator.vibrate) navigator.vibrate(8);
+});
+
+$("swap").addEventListener("click", function(){
+  var f = S.from; S.from = S.to; S.to = f;
+  save(); render();
+});
+
+/* ---------- Kurs-Blatt ---------- */
+var tab = "calc";
+function openRate(){
+  var R = currentRate();
+  $("rsPair").textContent = S.from + " → " + S.to;
+  $("lbGiven").textContent = "Gegeben (" + S.from + ")";
+  $("lbGot").textContent = "Erhalten (" + S.to + ")";
+  $("lbDirect").textContent = "1 " + S.from + " = ? " + S.to;
+  $("inDirect").value = R ? fmtRate(R.rate) : "";
+  $("inGiven").value = ""; $("inGot").value = ""; $("inLabel").value = "";
+  $("calcOut").textContent = "Beträge eintragen – der Kurs wird daraus berechnet.";
+  drawList();
+  $("sheetRate").classList.add("on");
+}
+function num(v){ return parseFloat(String(v).replace(/\./g,"").replace(",", ".")); }
+
+document.querySelectorAll("#sheetRate .tab").forEach(function(t){
+  t.addEventListener("click", function(){
+    document.querySelectorAll("#sheetRate .tab").forEach(function(x){ x.classList.remove("on"); });
+    t.classList.add("on");
+    tab = t.getAttribute("data-tab");
+    $("tabCalc").style.display   = tab === "calc" ? "" : "none";
+    $("tabDirect").style.display = tab === "direct" ? "" : "none";
+  });
+});
+
+function liveCalc(){
+  var g = num($("inGiven").value), r = num($("inGot").value);
+  if(g > 0 && r > 0){
+    $("calcOut").textContent = "Dein Kurs: 1 " + S.from + " = " + fmtRate(r/g) + " " + S.to +
+      "  ·  1000 " + S.to + " = " + fmt(1000*g/r, 2) + " " + S.from;
+  } else {
+    $("calcOut").textContent = "Beträge eintragen – der Kurs wird daraus berechnet.";
+  }
+}
+$("inGiven").addEventListener("input", liveCalc);
+$("inGot").addEventListener("input", liveCalc);
+
+$("saveRate").addEventListener("click", function(){
+  var rate;
+  if(tab === "calc"){
+    var g = num($("inGiven").value), r = num($("inGot").value);
+    if(!(g > 0 && r > 0)){ $("calcOut").textContent = "Bitte beide Beträge eintragen."; return; }
+    rate = r / g;
+  } else {
+    rate = num($("inDirect").value);
+    if(!(rate > 0)){ $("lbDirect").textContent = "Bitte einen Kurs größer 0 eintragen"; return; }
+  }
+  var id = Date.now();
+  S.rates.unshift({ id:id, from:S.from, to:S.to, rate:rate,
+    label: ($("inLabel").value || "").trim() || "Eigener Kurs", ts:Date.now() });
+  S.active[S.from + ">" + S.to] = id;
+  save(); render(); drawList();
+  $("inGiven").value = ""; $("inGot").value = ""; $("inLabel").value = "";
+  liveCalc();
+  $("sheetRate").classList.remove("on");
+});
+
+function drawList(){
+  var ul = $("rateList"); ul.innerHTML = "";
+  var act = S.active[S.from + ">" + S.to];
+  var mine = S.rates.filter(function(r){
+    return (r.from === S.from && r.to === S.to) || (r.from === S.to && r.to === S.from);
+  });
+  if(!mine.length){
+    var e = document.createElement("li");
+    e.innerHTML = '<div class="empty">Noch nichts gespeichert. Oben eintragen und sichern.</div>';
+    ul.appendChild(e); return;
+  }
+  mine.forEach(function(r){
+    var inv = !(r.from === S.from && r.to === S.to);
+    var shown = inv ? 1/r.rate : r.rate;
+    var li = document.createElement("li");
+    if(r.id === act) li.className = "on";
+    var d = new Date(r.ts);
+    var when = ("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+"."+d.getFullYear();
+    var info = document.createElement("div");
+    info.className = "info";
+    info.innerHTML = '<div class="name">' + esc(r.label) + '</div><div class="num">1 ' + S.from +
+      ' = ' + fmtRate(shown) + ' ' + S.to + ' · ' + when + (inv ? ' · umgekehrt' : '') + '</div>';
+    info.addEventListener("click", function(){
+      S.active[S.from + ">" + S.to] = r.id; save(); render(); drawList();
+    });
+    var del = document.createElement("button");
+    del.className = "del"; del.textContent = "✕"; del.setAttribute("aria-label","Kurs löschen");
+    del.addEventListener("click", function(){
+      S.rates = S.rates.filter(function(x){ return x.id !== r.id; });
+      if(S.active[S.from + ">" + S.to] === r.id) delete S.active[S.from + ">" + S.to];
+      save(); render(); drawList();
+    });
+    li.appendChild(info); li.appendChild(del);
+    ul.appendChild(li);
+  });
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+  return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]; }); }
+
+$("closeRate").addEventListener("click", function(){ $("sheetRate").classList.remove("on"); });
+$("sheetRate").addEventListener("click", function(e){ if(e.target === this) this.classList.remove("on"); });
+$("rateBar").addEventListener("click", openRate);
+
+/* ---------- Währungs-Blatt ---------- */
+var slot = "from";
+function openCur(){ slot = "from"; markSlot(); drawCur(); $("sheetCur").classList.add("on"); }
+function markSlot(){
+  document.querySelectorAll("#sheetCur .tab").forEach(function(t){
+    t.classList.toggle("on", t.getAttribute("data-slot") === slot);
+  });
+}
+document.querySelectorAll("#sheetCur .tab").forEach(function(t){
+  t.addEventListener("click", function(){ slot = t.getAttribute("data-slot"); markSlot(); drawCur(); });
+});
+function drawCur(){
+  var g = $("curGrid"); g.innerHTML = "";
+  Object.keys(CUR).forEach(function(code){
+    var b = document.createElement("button");
+    b.innerHTML = '<span>' + CUR[code].f + '</span><span>' + code + '</span>';
+    if((slot === "from" ? S.from : S.to) === code) b.className = "on";
+    b.addEventListener("click", function(){
+      if(slot === "from"){ if(code === S.to) S.to = S.from; S.from = code; }
+      else { if(code === S.from) S.from = S.to; S.to = code; }
+      save(); render(); drawCur();
+      $("sheetCur").classList.remove("on");
+    });
+    g.appendChild(b);
+  });
+}
+$("closeCur").addEventListener("click", function(){ $("sheetCur").classList.remove("on"); });
+$("sheetCur").addEventListener("click", function(e){ if(e.target === this) this.classList.remove("on"); });
+
+/* ---------- Feinschliff ---------- */
+document.addEventListener("gesturestart", function(e){ e.preventDefault(); });
+document.addEventListener("dblclick", function(e){ e.preventDefault(); });
+window.addEventListener("keydown", function(e){
+  if(document.querySelector(".sheet.on")) return;
+  var m = {"Backspace":"back","Escape":"ce","Enter":"=","x":"*",",":",",".":","};
+  if(/^[0-9]$/.test(e.key)) key(e.key);
+  else if(m[e.key]) key(m[e.key]);
+  else if("+-*/=".indexOf(e.key) >= 0) key(e.key);
+});
+
+render();
+
+/* ---------- Offline-Betrieb ---------- */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){ /* offline weiter nutzbar */ });
+  });
+}
+</script>
+</body>
+</html>

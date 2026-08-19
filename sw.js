@@ -1,7 +1,7 @@
 /* Mein Kurs – Offline-Cache
    Nach jeder Änderung an index.html: VERSION hochzählen (kurs-v2, kurs-v3 …),
    sonst behält das iPhone die alte Fassung. */
-var VERSION = "kurs-v2";
+var VERSION = "kurs-v3";
 var FILES = ["./", "./index.html"];
 
 self.addEventListener("install", function(e){

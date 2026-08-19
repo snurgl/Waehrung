@@ -83,9 +83,10 @@ body{
 .k svg{display:block}
 
 /* ---------- Kursleiste ---------- */
-.rate{flex:0 0 auto;padding:11px 16px calc(11px + env(safe-area-inset-bottom));
+.rate{flex:0 0 auto;padding:9px 16px calc(9px + env(safe-area-inset-bottom));
   background:var(--bg);text-align:center;font-size:clamp(12px,3.5vw,14px);line-height:1.45;cursor:pointer}
-.rate b{font-weight:500}
+.rate .pair{font-weight:500;letter-spacing:.1px}
+.rate .pair + .pair{opacity:.9}
 .rate .sub{opacity:.72;font-size:.88em}
 .rate:active{background:#0c66a6}
 
@@ -190,7 +191,8 @@ body{
   </div>
 
   <div class="rate" id="rateBar">
-    <div><b id="rateLine">1 EUR = 55,5838 TRY</b></div>
+    <div class="pair" id="rateLine">1 EUR = 55,5838 TRY</div>
+    <div class="pair" id="rateLine2">1 TRY = 0,017991 EUR</div>
     <div class="sub" id="rateSub">Eigener Kurs · tippen zum Ändern</div>
   </div>
 </div>
@@ -376,12 +378,14 @@ function render(){
   fitClass($("botVal"), b);
 
   if(R){
-    $("rateLine").textContent = "1 " + S.from + " = " + fmtRate(R.rate) + " " + S.to;
+    $("rateLine").textContent  = "1 " + S.from + " = " + fmtRate(R.rate) + " " + S.to;
+    $("rateLine2").textContent = "1 " + S.to + " = " + fmtRate(1/R.rate) + " " + S.from;
     var d = new Date(R.src.ts);
     var when = ("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+"."+d.getFullYear();
-    $("rateSub").textContent = (R.src.label || "Eigener Kurs") + (R.inv ? " (umgekehrt)" : "") + " · " + when;
+    $("rateSub").textContent = (R.src.label || "Eigener Kurs") + " · " + when;
   } else {
-    $("rateLine").textContent = "Noch kein Kurs für " + S.from + " → " + S.to;
+    $("rateLine").textContent  = "Noch kein Kurs für " + S.from + " → " + S.to;
+    $("rateLine2").textContent = "";
     $("rateSub").textContent = "Tippen und eintragen";
   }
   document.querySelectorAll(".k.op").forEach(function(k){

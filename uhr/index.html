@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Uhr lernen">
+<meta name="theme-color" content="#fff3d6">
+<title>Uhr lernen</title>
+<style>
+:root{
+  --bg:#fff3d6; --card:#ffffff; --ink:#22314a; --muted:#5d6b82;
+  --red:#d62839; --blue:#1d6fd6; --purple:#7b2cbf; --green:#2a9d5c;
+  --line:#e6d9b8;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  padding:max(10px,env(safe-area-inset-top)) 14px max(20px,env(safe-area-inset-bottom));-webkit-text-size-adjust:100%}
+main{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+h1{font-size:22px;margin:4px 0 0;text-align:center}
+.card{background:var(--card);border-radius:18px;padding:12px;box-shadow:0 2px 8px rgba(60,40,0,.12)}
+#clock{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+#clock.locked{opacity:.97}
+.digital{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.digital .big{font-size:52px;font-weight:700;letter-spacing:2px;font-variant-numeric:tabular-nums}
+.digital .part{font-size:15px;color:var(--muted)}
+.digital .say{font-size:19px;font-weight:600}
+.digital .say.formal{color:var(--purple)}
+.digital .say.casual{color:var(--red)}
+.hidden{display:none!important}
+button,select{font:inherit;color:inherit}
+.btn{border:none;border-radius:14px;background:#eef2f9;padding:10px 14px;font-weight:600;min-height:46px;cursor:pointer}
+.btn:active{filter:brightness(.92)}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.green{background:var(--green);color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip[aria-pressed="true"]{background:var(--blue);color:#fff}
+.mic{width:84px;height:84px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:38px;
+  box-shadow:0 4px 12px rgba(214,40,57,.4);cursor:pointer}
+.mic.on{animation:pulse 1.2s infinite;background:#b01e2d}
+@keyframes pulse{50%{box-shadow:0 0 0 14px rgba(214,40,57,.18)}}
+.micwrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+#heard{min-height:24px;font-size:17px;font-weight:600;text-align:center}
+#status{font-size:14px;color:var(--muted);text-align:center}
+.hint{font-size:13px;color:var(--muted);text-align:center;line-height:1.4}
+.adj{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.adj .grp{display:flex;align-items:center;justify-content:space-between;background:#f6f1e3;border-radius:14px;padding:4px 6px;gap:4px}
+.adj .grp span{font-weight:700;font-size:14px}
+.adj .btn{min-width:46px;padding:8px 10px}
+h2{font-size:17px;margin:0 0 8px}
+.quizhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+#qprompt{font-size:20px;font-weight:700;margin:8px 0;text-align:center}
+#choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#choices .btn{font-size:17px;min-height:54px}
+#choices .btn.right{background:var(--green);color:#fff}
+#choices .btn.wrong{background:var(--red);color:#fff}
+#feedback{text-align:center;font-weight:700;font-size:18px;min-height:26px;margin-top:6px}
+select{border:1px solid var(--line);border-radius:10px;padding:8px;background:#fff}
+</style>
+</head>
+<body>
+<main>
+  <h1>🕒 Uhr lernen</h1>
+
+  <div class="card">
+    <svg id="clock" viewBox="0 0 400 400" role="img" aria-label="Zifferblatt"></svg>
+  </div>
+
+  <div class="card digital" id="digitalCard">
+    <div class="big" id="dig">00:00</div>
+    <div class="part" id="part"></div>
+    <div class="say casual" id="sayCasual"></div>
+    <div class="say formal" id="sayFormal"></div>
+    <button class="btn" id="speakBtn">🔊 Vorlesen</button>
+  </div>
+
+  <div class="card">
+    <div class="micwrap">
+      <button class="mic" id="mic" aria-label="Spracheingabe an/aus">🎤</button>
+      <div id="heard"></div>
+      <div id="status">Tippe aufs Mikrofon und sag zum Beispiel „halb vier“.</div>
+    </div>
+    <div class="hint">
+      Beispiele: „halb vier“ · „Viertel nach zwei“ · „zwanzig vor acht“ ·<br>
+      „fünfzehn Uhr dreißig“ · „17:45“ · „Mitternacht“ · „Mittag“ ·<br>
+      „Wie spät ist es?“ · „Quiz“ · „weiter“ · „Stopp“
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Uhr stellen</h2>
+    <div class="adj">
+      <div class="grp"><button class="btn" data-d="-60">−</button><span>Stunde</span><button class="btn" data-d="60">+</button></div>
+      <div class="grp"><button class="btn" data-d="-5">−</button><span>5 Min.</span><button class="btn" data-d="5">+</button></div>
+      <div class="grp"><button class="btn" data-d="-1">−</button><span>1 Min.</span><button class="btn" data-d="1">+</button></div>
+      <div class="grp"><button class="btn" id="ampm" style="flex:1">☀️ Vormittag</button></div>
+    </div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="nowBtn">Jetzt</button>
+      <span class="hint" style="align-self:center">Zeiger kannst du auch mit dem Finger ziehen.</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Zahlen anzeigen</h2>
+    <div class="row">
+      <button class="btn chip" id="cH12" aria-pressed="true">Stunden 1–12</button>
+      <button class="btn chip" id="cH24" aria-pressed="true">Stunden 13–24</button>
+      <button class="btn chip" id="cMin">Minuten: 5er</button>
+    </div>
+    <div class="hint" style="margin-top:6px">Oben steht bei den Stunden 12 bzw. 24 (= 0 Uhr), bei den Minuten 60 (= 0).</div>
+  </div>
+
+  <div class="card" id="quizCard">
+    <div class="quizhead">
+      <h2 style="margin:0">Quiz</h2>
+      <select id="level" aria-label="Schwierigkeit">
+        <option value="h">Ganze Stunden</option>
+        <option value="half">Halbe Stunden</option>
+        <option value="quarter" selected>Viertelstunden</option>
+        <option value="five">5-Minuten-Schritte</option>
+        <option value="any">Alle Minuten</option>
+      </select>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button class="btn primary" id="qRead">Uhr ablesen</button>
+      <button class="btn primary" id="qSet">Uhr stellen</button>
+      <button class="btn hidden" id="qStop">Beenden</button>
+    </div>
+    <div id="quizBody" class="hidden">
+      <div id="qprompt"></div>
+      <div id="choices"></div>
+      <div class="row"><button class="btn green hidden" id="qCheck">Fertig ✔</button>
+        <button class="btn hidden" id="qNext">Weiter ➜</button></div>
+      <div id="feedback"></div>
+      <div class="hint" id="score"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+"use strict";
+/* ============ Zahlen & Sprachausgabe (Text) ============ */
+var ONES=["null","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn","elf","zwölf",
+  "dreizehn","vierzehn","fünfzehn","sechzehn","siebzehn","achtzehn","neunzehn"];
+var TENS={2:"zwanzig",3:"dreißig",4:"vierzig",5:"fünfzig"};
+function numToWords(n){
+  if(n<20) return ONES[n];
+  var u=n%10, t=Math.floor(n/10);
+  return (u?(u===1?"ein":ONES[u])+"und":"")+TENS[t];
+}
+function hourWord(h){ return h===1?"eins":ONES[h]; }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+/* Umgangssprache (12-Stunden): "halb vier", "Viertel nach zwei" … */
+function sayCasual(t){
+  var h24=Math.floor(t/60)%24, m=t%60, h=h24%12||12, nx=h%12+1;
+  switch(m){
+    case 0:  return (h===1?"ein":ONES[h])+" Uhr";
+    case 5:  return "fünf nach "+hourWord(h);
+    case 10: return "zehn nach "+hourWord(h);
+    case 15: return "Viertel nach "+hourWord(h);
+    case 20: return "zwanzig nach "+hourWord(h);
+    case 25: return "fünf vor halb "+hourWord(nx);
+    case 30: return "halb "+hourWord(nx);
+    case 35: return "fünf nach halb "+hourWord(nx);
+    case 40: return "zwanzig vor "+hourWord(nx);
+    case 45: return "Viertel vor "+hourWord(nx);
+    case 50: return "zehn vor "+hourWord(nx);
+    case 55: return "fünf vor "+hourWord(nx);
+  }
+  if(m<30) return (m===1?"eine Minute":numToWords(m)+" Minuten")+" nach "+hourWord(h);
+  return (60-m===1?"eine Minute":numToWords(60-m)+" Minuten")+" vor "+hourWord(nx);
+}
+/* Amtlich (24-Stunden): "fünfzehn Uhr dreißig" */
+function sayFormal(t){
+  var h=Math.floor(t/60)%24, m=t%60;
+  return (h===1?"ein":numToWords(h))+" Uhr"+(m?" "+numToWords(m):"");
+}
+function dayPart(t){
+  var h=Math.floor(t/60)%24;
+  if(h<5) return "nachts"; if(h<10) return "morgens"; if(h<12) return "vormittags";
+  if(h<14) return "mittags"; if(h<18) return "nachmittags"; if(h<22) return "abends"; return "nachts";
+}
+function pad2(n){ return (n<10?"0":"")+n; }
+function mod(a,n){ return ((a%n)+n)%n; }
+
+/* ============ Spracherkennung: Text -> Uhrzeit / Befehl ============ */
+function norm(s){
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ß/g,"ss");
+}
+var NUM=new Map();
+(function(){
+  for(var n=0;n<60;n++) NUM.set(norm(numToWords(n)),n);
+  NUM.set("ein",1); NUM.set("eine",1); NUM.set("zwo",2);
+  NUM.set("fuenf",5); NUM.set("zwoelf",12); NUM.set("dreissig",30);
+})();
+
+/* Rechnet gesprochene Stunde + Offset in Minuten des Tages um.
+   total = Minuten ab "0 Uhr" der genannten Stunde; explicit = 24-h-Angabe (13–24, 0). */
+function resolve(total, explicit, half, curT){
+  total=mod(total,1440);
+  if(explicit) return total;
+  var h12=Math.floor(total/60)%12, m=total%60, pm;
+  if(half==="pm") pm=true;
+  else if(half==="am") pm=false;
+  else if(half==="night") pm=(h12>=6);
+  else pm=curT>=720;
+  return (h12+(pm?12:0))*60+m;
+}
+
+/* Liefert {type:"time",t} | {type:"cmd",name} | null */
+function interpret(raw, curT){
+  var s=norm(raw).replace(/(\d)\s*[.:]\s*(\d{2})\b/g,"$1:$2");
+  var half=null;
+  if(/\b(nachmittags?|abends?)\b/.test(s)) half="pm";
+  else if(/\b(morgens?|vormittags?|frueh)\b/.test(s)) half="am";
+  else if(/\bnachts?\b/.test(s)) half="night";
+
+  var m;
+  if((m=s.match(/\b(\d{1,2}):(\d{2})\b/)) && +m[1]<=24 && +m[2]<60){
+    var hh=+m[1];
+    return {type:"time", t:resolve(hh*60+ +m[2], hh>=13||hh===0||m[1].length===2&&m[1][0]==="0", half, curT)};
+  }
+  var tokens=s.split(/[^a-z0-9]+/).filter(Boolean);
+  var conv=tokens.map(function(w){ return NUM.has(w)?String(NUM.get(w)):w; }).join(" ");
+
+  function rel(X,delta){ X=+X; if(X>24) return null;
+    return {type:"time", t:resolve(X*60+delta, X>=13, half, curT)}; }
+  var r=null;
+  if((m=conv.match(/(\d+) (?:minuten? )?vor halb (\d+)/)))        r=rel(m[2],-30-+m[1]);
+  else if((m=conv.match(/(\d+) (?:minuten? )?nach halb (\d+)/)))  r=rel(m[2],-30+ +m[1]);
+  else if((m=conv.match(/\bhalb (\d+)/)))                          r=rel(m[1],-30);
+  else if((m=conv.match(/(?:dreiviertel|3 viertel) (\d+)/)))       r=rel(m[1],-15);
+  else if((m=conv.match(/viertel nach (\d+)/)))                    r=rel(m[1],15);
+  else if((m=conv.match(/viertel vor (\d+)/)))                     r=rel(m[1],-15);
+  else if((m=conv.match(/(\d+) (?:minuten? )?nach (\d+)/)) && +m[1]<60) r=rel(m[2],+m[1]);
+  else if((m=conv.match(/(\d+) (?:minuten? )?vor (\d+)/)) && +m[1]<60)  r=rel(m[2],-m[1]);
+  else if((m=conv.match(/\bviertel (\d+)/)))                       r=rel(m[1],-45);   // "viertel vier" = 3:15
+  else if((m=conv.match(/(\d+) uhr (\d+)/)) && +m[2]<60 && +m[1]<=24){
+    var h2=+m[1];
+    r={type:"time", t:resolve(h2*60+ +m[2], h2>=13||h2===0, half, curT)};
+  }
+  else if((m=conv.match(/(\d+) uhr\b/)) && +m[1]<=24){
+    var h3=+m[1];
+    r={type:"time", t:resolve(h3*60, h3>=13||h3===0, half, curT)};
+  }
+  else if(/\bmitternacht\b/.test(s)) r={type:"time", t:0};
+  else if(/\bmittags?\b/.test(s))    r={type:"time", t:720};
+  if(r) return r;
+
+  function has(w){ return tokens.indexOf(w)>=0; }
+  if(has("quiz")||has("aufgabe")||has("uben")||has("ubung")||has("test")) return {type:"cmd",name:"quiz"};
+  if(has("stopp")||has("stop")||has("ende")||has("beenden")) return {type:"cmd",name:"stop"};
+  if(has("weiter")||has("nachste")||has("nachster")||has("nochmal")) return {type:"cmd",name:"next"};
+  if(/wie spat|\bjetzt\b|aktuell/.test(s)) return {type:"cmd",name:"now"};
+  if(has("vorlesen")||has("lies")||has("sag")||has("sprich")||has("wiederhole")) return {type:"cmd",name:"speak"};
+  return null;
+}
+
+/* ============ Zustand ============ */
+var t=(function(){ var d=new Date(); return d.getHours()*60+d.getMinutes(); })();   // Minuten des Tages 0..1439
+var cfg={h12:true,h24:true,min:"five"};
+try{ var saved=JSON.parse(localStorage.getItem("uhr-cfg")||"null"); if(saved) cfg=Object.assign(cfg,saved); }catch(e){}
+function saveCfg(){ try{ localStorage.setItem("uhr-cfg",JSON.stringify(cfg)); }catch(e){} }
+var quiz=null;   // {mode,target,score,asked,answered}
+
+/* ============ Zifferblatt (SVG) ============ */
+var NS="http://www.w3.org/2000/svg";
+function el(name,attrs,parent){
+  var e=document.createElementNS(NS,name);
+  for(var k in attrs) e.setAttribute(k,attrs[k]);
+  if(parent) parent.appendChild(e);
+  return e;
+}
+function pol(r,deg){ var a=(deg-90)*Math.PI/180; return [200+r*Math.cos(a),200+r*Math.sin(a)]; }
+var svg=document.getElementById("clock");
+el("circle",{cx:200,cy:200,r:197,fill:"#fff",stroke:"#22314a","stroke-width":4},svg);
+var hl=el("g",{},svg), face=el("g",{},svg);
+var hHand=el("line",{x1:200,y1:208,x2:200,y2:116,stroke:"#d62839","stroke-width":11,"stroke-linecap":"round"},svg);
+var mHand=el("line",{x1:200,y1:212,x2:200,y2:48,stroke:"#1d6fd6","stroke-width":6,"stroke-linecap":"round"},svg);
+el("circle",{cx:200,cy:200,r:9,fill:"#22314a"},svg);
+
+function label(txt,r,deg,size,color,weight){
+  var p=pol(r,deg);
+  var x=el("text",{x:p[0],y:p[1],"text-anchor":"middle","dominant-baseline":"central","font-size":size,
+    fill:color,"font-weight":weight||600,"font-family":"-apple-system,Helvetica,Arial,sans-serif"},face);
+  x.textContent=txt;
+}
+function drawFace(){
+  face.textContent="";
+  var i,p1,p2;
+  for(i=0;i<60;i++){
+    var long=i%5===0;
+    p1=pol(195,i*6); p2=pol(long?181:188,i*6);
+    el("line",{x1:p1[0],y1:p1[1],x2:p2[0],y2:p2[1],stroke:"#22314a","stroke-width":long?3:1.2},face);
+  }
+  if(cfg.min==="five") for(i=5;i<=60;i+=5) label(i,166,i*6,15,"#1d6fd6",700);
+  if(cfg.min==="all")  for(i=1;i<=60;i++)  label(i,168,i*6,i%5===0?13:10,"#1d6fd6",i%5===0?700:500);
+  if(cfg.h12) for(i=1;i<=12;i++) label(i,138,i*30,i>=10?27:29,"#d62839",700);
+  if(cfg.h24) for(i=1;i<=12;i++) label(12+i,100,i*30,16,"#7b2cbf",700);
+}
+function renderClock(){
+  var h24=Math.floor(t/60)%24, m=t%60;
+  hHand.setAttribute("transform","rotate("+((t%720)/2)+" 200 200)");
+  mHand.setAttribute("transform","rotate("+(m*6)+" 200 200)");
+  hl.textContent="";
+  var p;
+  if(cfg.h12){ p=pol(138,(h24%12)*30); el("circle",{cx:p[0],cy:p[1],r:21,fill:"#ffe08a"},hl); }
+  if(cfg.h24 && (h24>=13||h24===0)){ p=pol(100,(h24%12)*30); el("circle",{cx:p[0],cy:p[1],r:14,fill:"#e5d4ff"},hl); }
+  if(cfg.min==="all" || (cfg.min==="five" && m%5===0)){
+    p=pol(cfg.min==="all"?168:166,m*6);
+    el("circle",{cx:p[0],cy:p[1],r:cfg.min==="all"?10:13,fill:"#cfe3ff"},hl);
+  }
+}
+
+/* ============ Anzeige ============ */
+var $=function(id){ return document.getElementById(id); };
+function render(){
+  var h24=Math.floor(t/60)%24, m=t%60;
+  $("dig").textContent=pad2(h24)+":"+pad2(m);
+  $("part").textContent=dayPart(t);
+  $("sayCasual").textContent=cap(sayCasual(t));
+  $("sayFormal").textContent=cap(sayFormal(t));
+  $("ampm").textContent=t>=720?"🌙 Nachmittag":"☀️ Vormittag";
+  $("cH12").setAttribute("aria-pressed",cfg.h12);
+  $("cH24").setAttribute("aria-pressed",cfg.h24);
+  $("cMin").textContent="Minuten: "+({off:"aus",five:"5er",all:"alle"})[cfg.min];
+  $("cMin").setAttribute("aria-pressed",cfg.min!=="off");
+  renderClock();
+}
+function setT(v){ t=mod(Math.round(v),1440); render(); }
+
+/* ============ Sprachausgabe ============ */
+var speaking=false;
+function speak(text,cb){
+  if(!("speechSynthesis" in window)){ if(cb) cb(); return; }
+  var wasListening=wantListen && listening;
+  if(wasListening) try{ rec.stop(); }catch(e){}
+  try{ speechSynthesis.cancel(); }catch(e){}
+  var u=new SpeechSynthesisUtterance(text);
+  u.lang="de-DE"; u.rate=0.9;
+  var vs=speechSynthesis.getVoices().filter(function(v){ return /^de/i.test(v.lang); });
+  if(vs.length) u.voice=vs[0];
+  speaking=true;
+  var done=function(){ speaking=false; if(cb) cb(); if(wantListen) startRec(); };
+  u.onend=done; u.onerror=done;
+  speechSynthesis.speak(u);
+}
+function speakTime(prefix){ speak((prefix||"")+sayCasual(t)+". Oder: "+sayFormal(t)+"."); }
+
+/* ============ Zeiger ziehen ============ */
+var drag=null;
+function svgAngle(e){
+  var r=svg.getBoundingClientRect(), sc=400/r.width;
+  var x=(e.clientX-r.left)*sc-200, y=(e.clientY-r.top)*sc-200;
+  return {r:Math.hypot(x,y), a:mod(Math.atan2(x,-y)*180/Math.PI,360)};
+}
+function dragMove(e){
+  var p=svgAngle(e), m=t%60, base=Math.floor(t/60)*60;
+  if(drag==="m"){
+    var nm=Math.round(p.a/6)%60;
+    if(m>=45 && nm<15) base+=60;
+    else if(m<15 && nm>=45) base-=60;
+    setT(base+nm);
+  }else{
+    var h12=mod(Math.round((p.a-m*0.5)/30),12), prev=Math.floor(t/60)%12, half=Math.floor(t/720);
+    if((prev===11&&h12===0)||(prev===0&&h12===11)) half=1-half;
+    setT((half*12+h12)*60+m);
+  }
+}
+svg.addEventListener("pointerdown",function(e){
+  if(quiz && quiz.mode==="read") return;
+  var p=svgAngle(e);
+  if(p.r<14) return;
+  drag=p.r<112?"h":"m";
+  try{ svg.setPointerCapture(e.pointerId); }catch(x){}
+  dragMove(e); e.preventDefault();
+});
+svg.addEventListener("pointermove",function(e){ if(drag) dragMove(e); });
+function endDrag(){ drag=null; }
+svg.addEventListener("pointerup",endDrag);
+svg.addEventListener("pointercancel",endDrag);
+
+/* ============ Bedienelemente ============ */
+document.querySelectorAll("[data-d]").forEach(function(b){
+  b.addEventListener("click",function(){ if(quiz&&quiz.mode==="read") return; setT(t+ +b.getAttribute("data-d")); });
+});
+$("ampm").addEventListener("click",function(){ if(quiz&&quiz.mode==="read") return; setT(t+720); });
+$("nowBtn").addEventListener("click",function(){ if(quiz&&quiz.mode==="read") return; var d=new Date(); setT(d.getHours()*60+d.getMinutes()); });
+$("speakBtn").addEventListener("click",function(){ speakTime("Es ist "); });
+$("cH12").addEventListener("click",function(){ cfg.h12=!cfg.h12; saveCfg(); drawFace(); render(); });
+$("cH24").addEventListener("click",function(){ cfg.h24=!cfg.h24; saveCfg(); drawFace(); render(); });
+$("cMin").addEventListener("click",function(){
+  cfg.min=({five:"all",all:"off",off:"five"})[cfg.min]; saveCfg(); drawFace(); render();
+});
+
+/* ============ Spracherkennung (Browser) ============ */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+var rec=null, listening=false, wantListen=false;
+function setStatus(s){ $("status").textContent=s; }
+if(!SR){
+  setStatus("Dieser Browser kann nicht zuhören (am besten Chrome oder Safari im Browser). Die Tasten und der Finger gehen trotzdem.");
+  $("mic").style.opacity=.4;
+}else{
+  rec=new SR();
+  rec.lang="de-DE"; rec.interimResults=true; rec.maxAlternatives=5; rec.continuous=false;
+  rec.onstart=function(){ listening=true; $("mic").classList.add("on"); setStatus("Ich höre zu …"); };
+  rec.onend=function(){
+    listening=false; $("mic").classList.remove("on");
+    if(wantListen && !speaking) setTimeout(startRec,250);
+    else if(!wantListen) setStatus("Mikrofon aus. Tippe zum Sprechen.");
+  };
+  rec.onerror=function(e){
+    if(e.error==="not-allowed"||e.error==="service-not-allowed"){
+      wantListen=false; setStatus("Mikrofon nicht erlaubt. Bitte in den Browser-Einstellungen freigeben.");
+    }else if(e.error==="no-speech"){ setStatus("Ich habe nichts gehört – sprich noch einmal."); }
+    else if(e.error!=="aborted"){ setStatus("Fehler bei der Spracherkennung: "+e.error); }
+  };
+  rec.onresult=function(e){
+    var res=e.results[e.results.length-1];
+    $("heard").textContent="„"+res[0].transcript+"“";
+    if(!res.isFinal) return;
+    var alts=[]; for(var i=0;i<res.length;i++) alts.push(res[i].transcript);
+    handleSpeech(alts);
+  };
+}
+function startRec(){ if(!rec||listening||speaking) return; try{ rec.start(); }catch(e){} }
+$("mic").addEventListener("click",function(){
+  if(!rec) return;
+  if(wantListen){ wantListen=false; try{ rec.stop(); }catch(e){} }
+  else{ wantListen=true; startRec(); }
+});
+
+function handleSpeech(alts){
+  var r=null;
+  for(var i=0;i<alts.length&&!r;i++) r=interpret(alts[i],t);
+  if(!r){ setStatus("Das habe ich nicht verstanden. Versuch z. B. „halb vier“."); return; }
+  if(r.type==="time"){
+    if(quiz && quiz.mode==="read"){ answerRead(r.t%720===quiz.target%720, r.t); return; }
+    setT(r.t); setStatus("Eingestellt: "+cap(sayCasual(t)));
+    speak("Es ist "+sayCasual(t)+".");
+  }else if(r.name==="now"){
+    var d=new Date(); setT(d.getHours()*60+d.getMinutes()); speakTime("Es ist ");
+  }else if(r.name==="speak"){
+    if(quiz && quiz.mode==="read" && !quiz.answered) setStatus("Erst raten, dann verrate ich es! 😉");
+    else speakTime("Es ist ");
+  }else if(r.name==="quiz"){ startQuiz("read"); }
+  else if(r.name==="stop"){ stopQuiz(); }
+  else if(r.name==="next"){ if(quiz) nextQuestion(); }
+}
+
+/* ============ Quiz ============ */
+function randMinute(level){
+  if(level==="h") return 0;
+  if(level==="half") return [0,30][Math.floor(Math.random()*2)];
+  if(level==="quarter") return [0,15,30,45][Math.floor(Math.random()*4)];
+  if(level==="five") return 5*Math.floor(Math.random()*12);
+  return Math.floor(Math.random()*60);
+}
+function startQuiz(mode){
+  var keep=quiz?quiz.score:0, asked=quiz?quiz.asked:0;
+  quiz={mode:mode,target:0,score:keep,asked:asked,answered:false};
+  $("quizBody").classList.remove("hidden");
+  $("qStop").classList.remove("hidden");
+  svg.classList.toggle("locked",mode==="read");
+  nextQuestion();
+}
+function stopQuiz(){
+  if(!quiz) return;
+  setStatus("Quiz beendet: "+quiz.score+" von "+quiz.asked+" richtig.");
+  quiz=null;
+  $("quizBody").classList.add("hidden"); $("qStop").classList.add("hidden");
+  $("digitalCard").classList.remove("hidden"); svg.classList.remove("locked");
+  render();
+}
+function nextQuestion(){
+  var lvl=$("level").value;
+  var prev=quiz.target, target;
+  do{ target=Math.floor(Math.random()*24)*60+randMinute(lvl); }while(target%720===prev%720);
+  quiz.target=target; quiz.answered=false; quiz.asked++;
+  $("feedback").textContent=""; $("qNext").classList.add("hidden"); $("qCheck").classList.add("hidden");
+  $("choices").textContent="";
+  if(quiz.mode==="read"){
+    t=target; render();
+    $("digitalCard").classList.add("hidden");
+    $("qprompt").textContent="Wie spät ist es?";
+    buildChoices(target);
+    setStatus("Sag die Uhrzeit oder tippe eine Antwort.");
+    speak("Wie spät ist es?");
+  }else{
+    $("digitalCard").classList.remove("hidden");
+    t=mod(target+360+30*Math.floor(Math.random()*8),1440); render();
+    $("qprompt").textContent="Stelle die Uhr auf: "+cap(sayCasual(target));
+    $("qCheck").classList.remove("hidden");
+    setStatus("Ziehe die Zeiger und tippe dann auf „Fertig“.");
+    speak("Stelle die Uhr auf "+sayCasual(target)+".");
+  }
+  updateScore();
+}
+function buildChoices(target){
+  var h=Math.floor(target/60)%12, m=target%60, cand={}, order=[];
+  function add(v){ v=mod(v,1440); var k=v%720; if(k!==target%720 && !cand[k]){ cand[k]=v; order.push(k); } }
+  add(target+60); add(target-60); add(target+15); add(target-15); add(target+30); add(target+5); add(target-5);
+  add(Math.round(m/5)*60+h*5);                       // Zeiger vertauscht
+  for(var i=order.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var x=order[i]; order[i]=order[j]; order[j]=x; }
+  var opts=[{v:target,ok:true}].concat(order.slice(0,3).map(function(k){ return {v:cand[k],ok:false}; }));
+  for(var a=opts.length-1;a>0;a--){ var b=Math.floor(Math.random()*(a+1)); var y=opts[a]; opts[a]=opts[b]; opts[b]=y; }
+  opts.forEach(function(o){
+    var btn=document.createElement("button");
+    btn.className="btn"; btn.textContent=cap(sayCasual(o.v));
+    btn.addEventListener("click",function(){ if(!quiz||quiz.answered) return; answerRead(o.ok,o.v,btn); });
+    btn._ok=o.ok; $("choices").appendChild(btn);
+  });
+}
+function answerRead(ok,said,btn){
+  if(!quiz||quiz.answered) return;
+  quiz.answered=true;
+  if(ok) quiz.score++;
+  Array.prototype.forEach.call($("choices").children,function(b){
+    if(b._ok) b.classList.add("right"); else if(b===btn) b.classList.add("wrong");
+  });
+  $("digitalCard").classList.remove("hidden"); render();
+  finishAnswer(ok);
+}
+function finishAnswer(ok){
+  var correct=cap(sayCasual(quiz.target));
+  $("feedback").textContent=ok?"Richtig! ⭐":"Nicht ganz – richtig ist: "+correct;
+  $("feedback").style.color=ok?"var(--green)":"var(--red)";
+  $("qNext").classList.remove("hidden"); $("qCheck").classList.add("hidden");
+  updateScore();
+  speak(ok?"Richtig! Das ist "+sayCasual(quiz.target)+".":"Nicht ganz. Es ist "+sayCasual(quiz.target)+".");
+}
+function updateScore(){ $("score").textContent="⭐ "+quiz.score+" von "+(quiz.answered?quiz.asked:quiz.asked-1)+" richtig"; }
+$("qRead").addEventListener("click",function(){ startQuiz("read"); });
+$("qSet").addEventListener("click",function(){ startQuiz("set"); });
+$("qStop").addEventListener("click",stopQuiz);
+$("qNext").addEventListener("click",function(){ if(quiz) nextQuestion(); });
+$("qCheck").addEventListener("click",function(){
+  if(!quiz||quiz.answered) return;
+  quiz.answered=true;
+  var ok=(t%720)===(quiz.target%720);
+  if(ok) quiz.score++;
+  finishAnswer(ok);
+});
+
+/* ============ Start ============ */
+drawFace(); render();
+if("speechSynthesis" in window) try{ speechSynthesis.getVoices(); }catch(e){}
+if("serviceWorker" in navigator){
+  window.addEventListener("load",function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+}
+window.__uhr={interpret:interpret,sayCasual:sayCasual,sayFormal:sayFormal};
+</script>
+</body>
+</html>
